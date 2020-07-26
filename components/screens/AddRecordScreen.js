@@ -1,6 +1,11 @@
 import React, { useState } from 'react'
 
-import { View, StyleSheet } from 'react-native'
+import {
+	View,
+	ScrollView,
+	KeyboardAvoidingView,
+	StyleSheet
+} from 'react-native'
 import {
 	Headline,
 	TextInput,
@@ -15,6 +20,7 @@ const AddRecordScreen = ({ records, setRecords }) => {
 	const [value, setValue] = useState('')
 	const [isValueHidden, setValueHidden] = useState(true)
 	const [isSnackVisible, setSnackVisible] = useState(false)
+	const [snackText, setSnackText] = useState('')
 
 	const handleValueHidden = () => {
 		setValueHidden(!isValueHidden)
@@ -23,23 +29,29 @@ const AddRecordScreen = ({ records, setRecords }) => {
 		return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + min
 	}
 	const handleAddRecord = () => {
-		const id = new Date().getTime() + getRandomInt(10000, 100000)
-		const time = new Date().toLocaleDateString()
+		if (title.length > 0 && value.length > 0) {
+			const id = new Date().getTime() + getRandomInt(10000, 100000)
+			const time = new Date().toLocaleDateString()
 
-		setRecords([...records, { id, title, value, time }])
-		setTitle('')
-		setValue('')
-		setSnackVisible(true)
+			setRecords([...records, { id, title, value, time }])
+			setTitle('')
+			setValue('')
+			setSnackText('New record added')
+			setSnackVisible(true)
+		} else {
+			setSnackText('Invalid Key/Value')
+			setSnackVisible(true)
+		}
 	}
 
 	return (
 		<>
-			<View style={styles.wrapper}>
+			<ScrollView style={styles.wrapper}>
 				<Headline style={styles.title}>Add new record</Headline>
 				<View style={styles.inputWrapper}>
 					<TextInput
 						style={styles.input}
-						label='Title'
+						label='Key'
 						mode='outlined'
 						value={title}
 						onChangeText={(text) => setTitle(text)}
@@ -55,24 +67,28 @@ const AddRecordScreen = ({ records, setRecords }) => {
 							secureTextEntry={isValueHidden}
 						/>
 						<HelperText>Password, Some secret, etc.</HelperText>
-
-						<IconButton
-							style={styles.viewButton}
-							icon={isValueHidden ? 'eye' : 'eye-off'}
-							onPress={handleValueHidden}
-						/>
+						<View style={styles.viewButton}>
+							<IconButton
+								icon={isValueHidden ? 'eye' : 'eye-off'}
+								onPress={handleValueHidden}
+							/>
+						</View>
 					</View>
 				</View>
-				<Button mode='contained' onPress={handleAddRecord}>
+				<Button
+					style={styles.addButton}
+					mode='contained'
+					onPress={handleAddRecord}
+				>
 					Add
 				</Button>
-			</View>
+			</ScrollView>
 			<Snackbar
 				visible={isSnackVisible}
 				onDismiss={() => setSnackVisible(false)}
 				duration={2000}
 			>
-				New record added
+				{snackText}
 			</Snackbar>
 		</>
 	)
@@ -101,7 +117,12 @@ const styles = StyleSheet.create({
 		position: 'absolute',
 		right: 10,
 		top: 26,
-		zIndex: 9
+		zIndex: 9,
+		backgroundColor: '#fff',
+		borderRadius: 50
+	},
+	addButton: {
+		marginBottom: 20
 	}
 })
 
